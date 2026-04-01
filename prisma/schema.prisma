@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  email     String   @unique
+  password  String
+  rol       String   @default("usuario")
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Cliente {
+  id        Int        @id @default(autoincrement())
+  nombre    String
+  telefono  String?
+  email     String?
+  rut       String?    @unique
+  direccion String?
+  vehiculos Vehiculo[]
+  createdAt DateTime   @default(now())
+}
+
+model Vehiculo {
+  id            Int            @id @default(autoincrement())
+  clienteId     Int
+  cliente       Cliente        @relation(fields: [clienteId], references: [id])
+  patente       String         @unique
+  marca         String
+  modelo        String
+  anio          Int?
+  color         String?
+  kmActual      Int            @default(0)
+  intervaloKm   Int            @default(10000)
+  mantenciones  Mantencion[]
+  recordatorios Recordatorio[]
+  createdAt     DateTime       @default(now())
+}
+
+model Mantencion {
+  id            Int      @id @default(autoincrement())
+  vehiculoId    Int
+  vehiculo      Vehiculo @relation(fields: [vehiculoId], references: [id])
+  tipo          String
+  descripcion   String?
+  kmEnServicio  Int
+  fechaServicio DateTime
+  costo         Float?
+  mecanico      String?
+  estado        String   @default("realizado")
+  createdAt     DateTime @default(now())
+}
+
+model Recordatorio {
+  id           Int       @id @default(autoincrement())
+  vehiculoId   Int       @unique
+  vehiculo     Vehiculo  @relation(fields: [vehiculoId], references: [id])
+  tipo         String
+  kmProximo    Int?
+  fechaProxima DateTime?
+  notificado   Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+}
